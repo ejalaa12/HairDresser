@@ -1,12 +1,10 @@
 package com.ejalaa.environment;
 
 import com.ejalaa.logging.Logger;
-import com.ejalaa.peoples.Client;
 import com.ejalaa.simulation.Entity;
 import com.ejalaa.simulation.Event;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -16,22 +14,15 @@ public class HairDresser extends Entity {
 
     private static final String name = "COIFFURE";
     public static String address = "XVIe arrondissement, Paris";
-    private int hairDressingDuration = 30;
     // State
     private boolean isOpen;
     private LocalDateTime nextOpeningTime, nextClosingTime, currentTime;
     // Transitions
     private Event openingEvent, closingEvent;
     private Random rand;
-    // Attributes about clients
-    private ArrayList<Client> waitingClientsList;
-    private int clientHandled;
-    private Event clientArrived, clientHasFinished;
 
     public HairDresser(LocalDateTime simStartTime) {
         this.rand = new Random();
-        this.waitingClientsList = new ArrayList<>();
-        this.clientHandled = 0;
         // Hairdresser is closed at the beginning
         this.isOpen = false;
         this.currentTime = simStartTime;
@@ -148,41 +139,4 @@ public class HairDresser extends Entity {
         System.out.println(this.nextClosingTime);
     }
 
-    public ArrayList<Client> getWaitingClientList() {
-        return this.waitingClientsList;
-    }
-
-    /*
-    * ********************************************************************
-    * Client Handling
-    * ********************************************************************
-    */
-
-    /*
-    Defines what to do when a client enters the shop
-     */
-    public void handleClient(Client client) {
-        this.waitingClientsList.add(client);
-        this.clientHandled += 1;
-        client.setFinishedTime(client.getArrivedTime().plusMinutes(this.hairDressingDuration));
-        String str = String.format("Just handled %s. QUEUE_SIZE=%d", client.name, this.waitingClientsList.size());
-        Logger.getInstance().log(name, client.getArrivedTime(), str);
-    }
-
-    /*
-    Defines what to do when a client has finished
-     */
-    public void letGo(Client client) {
-        if (this.waitingClientsList.contains(client)) {
-            this.waitingClientsList.remove(client);
-            String str = String.format("Finished with %s. QUEUE_SIZE=%d", client.name, this.waitingClientsList.size());
-            Logger.getInstance().log(name, client.getFinishedTime(), str);
-        } else {
-            throw new ArrayStoreException();
-        }
-    }
-
-    public int getClientHandled() {
-        return clientHandled;
-    }
 }
