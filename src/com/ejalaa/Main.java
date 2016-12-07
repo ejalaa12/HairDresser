@@ -29,13 +29,19 @@ public class Main {
         // Client
         Client bob = new Client(simEngine, "Bob", salon);
         bob.setArrivedTime(LocalDateTime.of(2016, 12, 10, 15, 0));
+        bob.start();
 
 
         simEngine.addEvent(salon.getNextEvent());
-        simEngine.addEvent(bob.getNextEvent());
+//        simEngine.addEvent(bob.getNextEvent());
 
         simEngine.loop();
         Logger.getInstance().log(LocalDateTime.now());
-        System.out.println(salon.getClientHandled());
+
+        System.out.println("-------------------------------------------------------");
+        System.out.println("SIMULATION RESULTS");
+        System.out.println("-------------------------------------------------------");
+        System.out.println(String.format("Opened days:\t %d", salon.getOpenedDays()));
+        System.out.println(String.format("Client handled:\t %d", salon.getClientHandled()));
     }
 }

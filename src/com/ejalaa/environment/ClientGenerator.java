@@ -7,7 +7,7 @@ import com.ejalaa.simulation.SimEngine;
 import java.time.LocalDateTime;
 
 /**
- * Created by ejalaa on 06/12/2016.
+ * Client generator generates new client at stepped time
  */
 public abstract class ClientGenerator extends Entity {
 
@@ -35,16 +35,10 @@ public abstract class ClientGenerator extends Entity {
                 createNewClientAction(clientName, getScheduledTime());
                 updateNbOfClientGenerated();
                 updateNextEvent();
-                addGeneratedEvent(getNextEvent());
+//                addGeneratedEvent(getNextEvent());
             }
         };
     }
-
-    @Override
-    public Event getNextEvent() {
-        return this.nextClientEvent;
-    }
-
 
     private int getNbOfClientGenerated() {
         return nbOfClientGenerated;
@@ -54,5 +48,5 @@ public abstract class ClientGenerator extends Entity {
         this.nbOfClientGenerated += 1;
     }
 
-    public abstract void createNewClientAction(String name, LocalDateTime timeToAppear);
+    abstract void createNewClientAction(String name, LocalDateTime timeToAppear);
 }

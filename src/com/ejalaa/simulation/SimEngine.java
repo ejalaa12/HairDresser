@@ -54,9 +54,6 @@ public class SimEngine {
         currentSimTime = currentEvent.getScheduledTime();
         // Do the action of this event and get all generated events
         currentEvent.doAction();
-        // Sometimes an action results in no other event
-        this.events.addAll(currentEvent.getGeneratedEvents());
-        Collections.sort(this.events);
         // Increment loops
         this.loops += 1;
     }

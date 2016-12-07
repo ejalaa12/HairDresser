@@ -1,7 +1,6 @@
 package com.ejalaa.simulation;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 /**
  * Event class represents a simulation event.
@@ -17,10 +16,8 @@ public abstract class Event implements Comparable<Event> {
     * ********************************************************************
     */
 
+    protected LocalDateTime scheduledTime;
     private String description, creator;
-    private LocalDateTime scheduledTime;
-    private ArrayList<Event> generatedEvents;
-
     /*
     Constructor
      */
@@ -30,21 +27,12 @@ public abstract class Event implements Comparable<Event> {
         this.creator = creator;
         this.scheduledTime = scheduledTime;
         this.description = description;
-        this.generatedEvents = new ArrayList<>();
     }
 
     /*
     Action to be done by the simulator engine
      */
     public abstract void doAction();
-
-    /*
-    Each event will generated new action. We use this method to add them to the list
-     */
-    public void addGeneratedEvent(Event e) {
-        if (e != null)
-            this.generatedEvents.add(e);
-    }
 
     /*
     Each event is comparable to another, by comparing their scheduled time
@@ -81,7 +69,4 @@ public abstract class Event implements Comparable<Event> {
         return res;
     }
 
-    public ArrayList<Event> getGeneratedEvents() {
-        return generatedEvents;
-    }
 }

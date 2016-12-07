@@ -11,6 +11,4 @@ public abstract class Entity {
         this.simEngine = simEngine;
     }
 
-    public abstract Event getNextEvent();
-
 }

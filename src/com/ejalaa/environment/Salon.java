@@ -37,6 +37,9 @@ public class Salon extends Entity {
     private int clientHandled;
     private Event clientArrived, clientHasFinished;
 
+    // Statistics
+    private int openedDays;
+
     public Salon(SimEngine simEngine) {
         super(simEngine);
         this.rand = simEngine.getRandom();
@@ -49,9 +52,9 @@ public class Salon extends Entity {
         // update opening and closing time for the first time
         updateNextOpeningTime();
         updateNextClosingTime();
-        // updating event first time
-        updateNextOpeningEvent();
-        updateNextClosingEvent();
+
+        // Stat
+        this.openedDays = 0;
     }
 
     // TODO: 07/12/2016 make salon open only tuesday to saturday
@@ -81,76 +84,16 @@ public class Salon extends Entity {
         this.nextClosingTime = this.nextClosingTime.plusMinutes(offset);
     }
 
-    private void updateNextOpeningEvent() {
-        this.openingEvent = new Event(name, nextOpeningTime, "Asking for opening") {
-            @Override
-            public void doAction() {
-                openingAction();
-                addGeneratedEvent(getNextEvent());
-            }
-        };
-    }
-
-    private void updateNextClosingEvent() {
-        this.closingEvent = new Event(name, nextClosingTime, "Asking for closing") {
-            @Override
-            public void doAction() {
-                closingAction();
-                addGeneratedEvent(getNextEvent());
-            }
-        };
-    }
-
-    private void openingAction() {
-        //"Opening shop from SimEngine and send back openedEvent";
-        this.isOpen = true;
-        Logger.getInstance().log(name, simEngine.getCurrentSimTime(), "Shop opened");
-        updateNextClosingTime();
-        updateNextClosingEvent();
-    }
-
-    private void closingAction() {
-        // Closing the shop
-        this.isOpen = false;
-        Logger.getInstance().log(name, simEngine.getCurrentSimTime(), "Shop closed");
-        updateNextOpeningTime();
-        updateNextOpeningEvent();
-    }
-
-    @Override
     public Event getNextEvent() {
         if (isOpen) {
-            return this.closingEvent;
+            return new CloseEvent();
         } else {
-            return this.openingEvent;
+            return new OpenEvent();
         }
-    }
-
-    /*
-    * ********************************************************************
-    * Getter and Setter
-    * ********************************************************************
-    */
-
-    public LocalDateTime getNextOpeningTime() {
-        return nextOpeningTime;
-    }
-
-    public LocalDateTime getNextClosingTime() {
-        return nextClosingTime;
     }
 
     public boolean isOpen() {
         return isOpen;
-    }
-
-    public void showSchedule() {
-        System.out.print("Current Time: ");
-        System.out.println(simEngine.getCurrentSimTime());
-        System.out.print("Next Opening: ");
-        System.out.println(nextOpeningTime);
-        System.out.print("Next Closing: ");
-        System.out.println(nextClosingTime);
     }
 
     public ArrayList<Client> getWaitingClientList() {
@@ -159,9 +102,13 @@ public class Salon extends Entity {
 
     /*
     * ********************************************************************
-    * Client Handling
+    * Getter and Setter
     * ********************************************************************
     */
+
+    public int getOpenedDays() {
+        return openedDays;
+    }
 
     /*
     Defines what to do when a client enters the shop
@@ -169,9 +116,9 @@ public class Salon extends Entity {
     public void handleClient(Client client) {
         this.waitingClientsList.add(client);
         this.clientHandled += 1;
-        client.setFinishedTime(client.getArrivedTime().plusMinutes(this.hairDressingDuration));
         String str = String.format("Just handled %s. QUEUE_SIZE=%d", client.name, this.waitingClientsList.size());
         Logger.getInstance().log(name, client.getArrivedTime(), str);
+        client.goAfter(this.hairDressingDuration);
     }
 
     /*
@@ -187,7 +134,49 @@ public class Salon extends Entity {
         }
     }
 
+    /*
+    * ********************************************************************
+    * Client Handling
+    * ********************************************************************
+    */
+
     public int getClientHandled() {
         return clientHandled;
+    }
+
+    /*
+    * ********************************************************************
+    * EVENT DEFINITIONS
+    * ********************************************************************
+    */
+    private class OpenEvent extends Event {
+
+        OpenEvent() {
+            super(name, nextOpeningTime, "Opening Shop");
+        }
+
+        @Override
+        public void doAction() {
+            Salon.this.isOpen = true;
+            Salon.this.openedDays += 1;
+            Logger.getInstance().log(name, simEngine.getCurrentSimTime(), "Shop Opened");
+            Salon.this.updateNextClosingTime();
+            simEngine.addEvent(getNextEvent());
+        }
+    }
+
+    private class CloseEvent extends Event {
+
+        CloseEvent() {
+            super(name, nextClosingTime, "Closing Shop");
+        }
+
+        @Override
+        public void doAction() {
+            Salon.this.isOpen = false;
+            Logger.getInstance().log(name, simEngine.getCurrentSimTime(), "Shop Closed");
+            Salon.this.updateNextOpeningTime();
+            simEngine.addEvent(Salon.this.getNextEvent());
+        }
     }
 }

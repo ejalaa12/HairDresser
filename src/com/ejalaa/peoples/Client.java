@@ -33,7 +33,11 @@ public class Client extends People {
         this.descName = className + this.name;
         this.salon = salon;
         this.state = State.Created;
-        // event creation
+    }
+
+    public void start() {
+        // First Event
+        simEngine.addEvent(new CheckSalonEvent());
     }
 
     /*
@@ -41,10 +45,6 @@ public class Client extends People {
     * GETTER AND SETTER
     * ********************************************************************
     */
-
-    protected int getMaxWaitingQueueToStay() {
-        return this.maxWaitingQueueToStay;
-    }
 
     public LocalDateTime getArrivedTime() {
         return arrivedTime;
@@ -58,8 +58,15 @@ public class Client extends People {
         return finishedTime;
     }
 
-    public void setFinishedTime(LocalDateTime finishedTime) {
-        this.finishedTime = finishedTime;
+    public void goAfter(int hairDressingDuration) {
+        finishedTime = arrivedTime.plusMinutes(hairDressingDuration);
+        simEngine.addEvent(new LeavingEvent());
+    }
+
+    // states
+    protected enum State {
+        Created, Inside, Gone
+
     }
 
     /*
@@ -67,47 +74,24 @@ public class Client extends People {
     * EVENTS
     * ********************************************************************
     */
-    private void defineIsHairdresserOpenAndLowQueueEvent() {
-        checkSalonOpenEvent = new Event("Is the hairdresser Open?",
-                this.arrivedTime, this.descName) {
-            @Override
-            public void doAction() {
-                checkingHairdresserAction(this.getScheduledTime());
-                addGeneratedEvent(getNextEvent());
-            }
-        };
-    }
+    private class CheckSalonEvent extends Event {
 
-    private void defineHairDressingDoneEvent() {
-        this.hairdressingDoneEvent = new Event("Hairdressing finished",
-                this.finishedTime, this.descName) {
-            @Override
-            public void doAction() {
-                hairdressingDoneAction(this.getScheduledTime());
-                addGeneratedEvent(getNextEvent());
-            }
-        };
-    }
-
-    /*
-    * ********************************************************************
-    * ACTIONS
-    * ********************************************************************
-    */
-    private void checkingHairdresserAction(LocalDateTime scheduledTime) {
-        if (salon.isOpen()) {
-            Logger.getInstance().log(this.descName, scheduledTime, "hairdresser is open and low queue. I enter");
-            this.state = State.Inside;
-            salon.handleClient(this);
-        } else {
-            Logger.getInstance().log(this.descName, scheduledTime, "hairdresser is closed. I Go");
-            this.state = State.Gone;
+        CheckSalonEvent() {
+            super(Client.this.descName, Client.this.getArrivedTime(), "Checking salon");
         }
-    }
 
-    private void hairdressingDoneAction(LocalDateTime scheduledTime) {
-        Logger.getInstance().log(this.descName, scheduledTime, "hairdressing done. I go");
-        this.state = State.Gone;
+        @Override
+        public void doAction() {
+            if (Client.this.salon.isOpen()) {
+                Logger.getInstance().log(Client.this.descName, scheduledTime, "I can enter");
+                Client.this.state = State.Inside;
+                Client.this.salon.handleClient(Client.this);
+            } else {
+                Logger.getInstance().log(Client.this.descName, scheduledTime, "I can not enter");
+                Client.this.state = State.Gone;
+            }
+
+        }
     }
 
     /*
@@ -115,22 +99,17 @@ public class Client extends People {
     * MACHINE STATE
     * ********************************************************************
     */
-    @Override
-    public Event getNextEvent() {
-        switch (this.state) {
-            case Created:
-                return this.checkSalonOpenEvent;
-            case Inside:
-                return this.hairdressingDoneEvent;
-            case Gone:
-                return null;
-            default:
-                return null;
-        }
-    }
 
-    // states
-    protected enum State {
-        Created, Inside, Gone
+    private class LeavingEvent extends Event {
+
+        LeavingEvent() {
+            super(Client.this.descName, finishedTime, "HairDressing Done. I'm Leaving");
+        }
+
+        @Override
+        public void doAction() {
+            Client.this.state = State.Gone;
+            Client.this.salon.letGo(Client.this);
+        }
     }
 }
