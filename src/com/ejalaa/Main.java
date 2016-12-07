@@ -43,5 +43,6 @@ public class Main {
         System.out.println("-------------------------------------------------------");
         System.out.println(String.format("Opened days:\t %d", salon.getOpenedDays()));
         System.out.println(String.format("Client handled:\t %d", salon.getClientHandled()));
+        // modif pour develop
     }
 }
