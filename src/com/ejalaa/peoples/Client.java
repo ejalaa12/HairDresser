@@ -1,5 +1,6 @@
 package com.ejalaa.peoples;
 
+import com.ejalaa.environment.Salon;
 import com.ejalaa.logging.Logger;
 import com.ejalaa.simulation.Event;
 
@@ -22,13 +23,15 @@ public abstract class Client extends People {
     private State state;
     // TODO: 04/12/2016 create dismissed event so that the environment can remove it from the list
     private Event checkHairDresserAndQueueStateEvent, hairdressingDoneEvent;
+    private Salon salon;
 
     /*
     CONSTRUCTOR
      */
-    protected Client(String name, LocalDateTime arrivingTimeAtHairdresser) {
+    protected Client(String name, Salon salon, LocalDateTime arrivingTimeAtHairdresser) {
         super(name);
         this.descName = className + this.name;
+        this.salon = salon;
         this.arrivingTimeAtHairdresser = arrivingTimeAtHairdresser;
         this.state = State.Created;
         // TODO: 06/12/2016 Log the time when the class is created, maybe in entity.super()
@@ -91,12 +94,12 @@ public abstract class Client extends People {
     * ********************************************************************
     */
     private void checkingHairdresserAction(LocalDateTime scheduledTime) {
-        if (hairdresserIsOpen() & lowQueue()) {
+        if (salon.isOpen() & lowQueue()) {
             Logger.getInstance().log(this.descName, scheduledTime, "hairdresser is open and low queue. I enter");
             this.state = State.Inside;
             handleMe();
             defineHairDressingDoneEvent();
-        } else if (hairdresserIsOpen()) {
+        } else if (salon.isOpen()) {
             Logger.getInstance().log(this.descName, scheduledTime, "hairdresser is open BUT big queue. I Go");
             this.state = State.Gone;
         } else {
@@ -130,7 +133,6 @@ public abstract class Client extends People {
         }
     }
 
-    protected abstract boolean hairdresserIsOpen();
 
     protected abstract boolean lowQueue();
 

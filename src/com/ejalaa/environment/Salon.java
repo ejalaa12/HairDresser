@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * The HairDresser class represents the place
+ * The Salon class represents the place
  */
-public class HairDresser extends Entity {
+public class Salon extends Entity {
 
     private static final String name = "COIFFURE";
     public static String address = "XVIe arrondissement, Paris";
@@ -28,7 +28,7 @@ public class HairDresser extends Entity {
     private int clientHandled;
     private Event clientArrived, clientHasFinished;
 
-    public HairDresser(LocalDateTime simStartTime) {
+    public Salon(LocalDateTime simStartTime) {
         this.rand = new Random();
         this.waitingClientsList = new ArrayList<>();
         this.clientHandled = 0;

@@ -1,7 +1,7 @@
 package com.ejalaa;
 
 import com.ejalaa.environment.ClientGenerator;
-import com.ejalaa.environment.HairDresser;
+import com.ejalaa.environment.Salon;
 import com.ejalaa.logging.Logger;
 import com.ejalaa.peoples.Client;
 import com.ejalaa.simulation.SimEngine;
@@ -42,10 +42,10 @@ public class Main {
         // Start time of simulation (datetime of first event)
         LocalDateTime simStart = LocalDateTime.of(2016, 11, 10, 8, 45);
         // End time of simulation is 29/12/2016 at 21:45
-        LocalDateTime simulationEndTime = LocalDateTime.of(2017, 11, 10, 20, 45);
+        LocalDateTime simulationEndTime = LocalDateTime.of(2016, 12, 10, 20, 45);
         SimEngine simEngine = new SimEngine(simulationEndTime);
         // Opening time of the hairdresser 10/12/2016 at 21:45
-        HairDresser hairDresser = new HairDresser(simStart);
+        Salon salon = new Salon(simStart);
         // Client Generator
         ClientGenerator clientGenerator = new ClientGenerator(simStart) {
 
@@ -54,22 +54,22 @@ public class Main {
                 Client client = new Client(name, timeToAppear) {
                     @Override
                     protected boolean hairdresserIsOpen() {
-                        return hairDresser.isOpen();
+                        return salon.isOpen();
                     }
 
                     @Override
                     protected boolean lowQueue() {
-                        return hairDresser.getWaitingClientList().size() < this.getMaxWaitingQueueToStay();
+                        return salon.getWaitingClientList().size() < this.getMaxWaitingQueueToStay();
                     }
 
                     @Override
                     protected void handleMe() {
-                        hairDresser.handleClient(this);
+                        salon.handleClient(this);
                     }
 
                     @Override
                     protected void letMeGo() {
-                        hairDresser.letGo(this);
+                        salon.letGo(this);
                     }
                 };
                 simEngine.addEvent(client.getNextEvent());
@@ -77,11 +77,11 @@ public class Main {
         };
 
 
-        simEngine.addEvent(hairDresser.getNextEvent());
+        simEngine.addEvent(salon.getNextEvent());
         simEngine.addEvent(clientGenerator.getNextEvent());
 
         simEngine.loop();
         Logger.getInstance().log(LocalDateTime.now());
-        System.out.println(hairDresser.getClientHandled());
+        System.out.println(salon.getClientHandled());
     }
 }

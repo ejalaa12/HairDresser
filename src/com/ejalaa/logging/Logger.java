@@ -50,7 +50,7 @@ public class Logger {
     private void mlog(String creatorName, LocalDateTime logTime, String message) {
         String timestamp = logicalDateTimeFormatter.format(logTime);
         String res = String.format("[%s] %-20s: %s", timestamp, creatorName, message);
-//        System.out.println(res);
+        System.out.println(res);
     }
 
     public void log(LocalDateTime logTime) {

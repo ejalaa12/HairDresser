@@ -9,18 +9,18 @@ import java.util.ArrayList;
  */
 public class Environment {
 
-    private HairDresser hairDresser;
+    private Salon salon;
     private ArrayList<Worker> workers, clients;
 
     public Environment(ArrayList<Worker> workers) {
         super();
         this.workers = workers;
-//        this.hairDresser = new HairDresser();
+//        this.salon = new Salon();
     }
 
-    public Environment(HairDresser hairDresser) {
+    public Environment(Salon salon) {
         super();
-        this.hairDresser = hairDresser;
+        this.salon = salon;
         this.workers = new ArrayList<>();
     }
 }
