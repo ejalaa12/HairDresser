@@ -15,7 +15,17 @@ Si un habitué arrive:
  		* les autres ne sont pas dispo tout de suite ???
  	- moins de 3 habitués pour ce favori:
  		* __il reste__
- 
+
+
+ ## Reponse
+
+ Si son favori n'est pas la ou trop occupe il s'en va
+
+ Sinon je choisirai le reste
+
+
+# Pour les nouveaux clients
+
 Si un client arrive:
 
  	- plus de 6 clients  >> il part
@@ -23,4 +33,4 @@ Si un client arrive:
 
  this.attribute vs attribute
 
- Que se passe t-il si on doit modifier un evenement ?
+ Que se passe t-il si on doit modifier un evenement ? A implementer (il faut le deposter et l'entite doit avoir une memoire);
