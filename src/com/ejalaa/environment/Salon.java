@@ -54,6 +54,7 @@ public class Salon extends Entity {
         updateNextClosingEvent();
     }
 
+    // TODO: 07/12/2016 make salon open only tuesday to saturday
     private void updateNextOpeningTime() {
         if (simEngine.getCurrentSimTime().getHour() > 9) {
             this.nextOpeningTime = simEngine.getCurrentSimTime().plusDays(1);

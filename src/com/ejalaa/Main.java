@@ -2,6 +2,7 @@ package com.ejalaa;
 
 import com.ejalaa.environment.Salon;
 import com.ejalaa.logging.Logger;
+import com.ejalaa.peoples.Client;
 import com.ejalaa.simulation.SimEngine;
 
 import java.time.LocalDateTime;
@@ -25,10 +26,13 @@ public class Main {
         SimEngine simEngine = new SimEngine(seed, simStart, simulationEndTime);
         // Opening time of the hairdresser 10/12/2016 at 21:45
         Salon salon = new Salon(simEngine);
-        // Client Generator
+        // Client
+        Client bob = new Client(simEngine, "Bob", salon);
+        bob.setArrivedTime(LocalDateTime.of(2016, 12, 10, 15, 0));
 
 
         simEngine.addEvent(salon.getNextEvent());
+        simEngine.addEvent(bob.getNextEvent());
 
         simEngine.loop();
         Logger.getInstance().log(LocalDateTime.now());

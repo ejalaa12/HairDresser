@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 /**
  * Class defining a client that comes to the hairdresser
  */
-public abstract class Client extends People {
+public class Client extends People {
 
     /*
     * ********************************************************************
@@ -22,20 +22,18 @@ public abstract class Client extends People {
     private String descName;
     private LocalDateTime arrivedTime, finishedTime;
     private State state;
-    private Event checkHairDresserAndQueueStateEvent, hairdressingDoneEvent;
+    private Event checkSalonOpenEvent, hairdressingDoneEvent;
     private Salon salon;
 
     /*
     CONSTRUCTOR
      */
-    protected Client(SimEngine simEngine, String name, Salon salon) {
+    public Client(SimEngine simEngine, String name, Salon salon) {
         super(simEngine, name);
         this.descName = className + this.name;
         this.salon = salon;
-        this.arrivedTime = arrivedTime;
         this.state = State.Created;
         // event creation
-        defineIsHairdresserOpenAndLowQueueEvent();
     }
 
     /*
@@ -52,6 +50,10 @@ public abstract class Client extends People {
         return arrivedTime;
     }
 
+    public void setArrivedTime(LocalDateTime arrivedTime) {
+        this.arrivedTime = arrivedTime;
+    }
+
     public LocalDateTime getFinishedTime() {
         return finishedTime;
     }
@@ -66,7 +68,7 @@ public abstract class Client extends People {
     * ********************************************************************
     */
     private void defineIsHairdresserOpenAndLowQueueEvent() {
-        this.checkHairDresserAndQueueStateEvent = new Event("Is the hairdresser Open and not a lot of people?",
+        checkSalonOpenEvent = new Event("Is the hairdresser Open?",
                 this.arrivedTime, this.descName) {
             @Override
             public void doAction() {
@@ -93,14 +95,10 @@ public abstract class Client extends People {
     * ********************************************************************
     */
     private void checkingHairdresserAction(LocalDateTime scheduledTime) {
-        if (salon.isOpen() & lowQueue()) {
+        if (salon.isOpen()) {
             Logger.getInstance().log(this.descName, scheduledTime, "hairdresser is open and low queue. I enter");
             this.state = State.Inside;
-            handleMe();
-            defineHairDressingDoneEvent();
-        } else if (salon.isOpen()) {
-            Logger.getInstance().log(this.descName, scheduledTime, "hairdresser is open BUT big queue. I Go");
-            this.state = State.Gone;
+            salon.handleClient(this);
         } else {
             Logger.getInstance().log(this.descName, scheduledTime, "hairdresser is closed. I Go");
             this.state = State.Gone;
@@ -108,7 +106,6 @@ public abstract class Client extends People {
     }
 
     private void hairdressingDoneAction(LocalDateTime scheduledTime) {
-        letMeGo();
         Logger.getInstance().log(this.descName, scheduledTime, "hairdressing done. I go");
         this.state = State.Gone;
     }
@@ -122,7 +119,7 @@ public abstract class Client extends People {
     public Event getNextEvent() {
         switch (this.state) {
             case Created:
-                return this.checkHairDresserAndQueueStateEvent;
+                return this.checkSalonOpenEvent;
             case Inside:
                 return this.hairdressingDoneEvent;
             case Gone:
@@ -131,13 +128,6 @@ public abstract class Client extends People {
                 return null;
         }
     }
-
-
-    protected abstract boolean lowQueue();
-
-    protected abstract void handleMe();
-
-    protected abstract void letMeGo();
 
     // states
     protected enum State {
