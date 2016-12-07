@@ -33,23 +33,28 @@ public class SimEngine {
         }
     }
 
+
     public void loop() {
         while (!simHasEnded()) {
-            // Get first element
-            Event currentEvent = this.events.get(0);
-            this.events.remove(0);
-            Logger.getInstance().log(currentEvent);
-            // Do the action of this event and get all generated events
-            currentEvent.doAction();
-            // Update simulation time with current event time
-            this.currentSimTime = currentEvent.getScheduledTime();
-            // Sometimes an action results in no other event
-            this.events.addAll(currentEvent.getGeneratedEvents());
-            Collections.sort(this.events);
-            // Increment loops
-            this.loops += 1;
+            simStep();
         }
         Logger.getInstance().log(className, this.currentSimTime, "Simulation has ended !");
+    }
+
+    private void simStep() {
+        // Get first element
+        Event currentEvent = this.events.get(0);
+        this.events.remove(0);
+        Logger.getInstance().log(currentEvent);
+        // Do the action of this event and get all generated events
+        currentEvent.doAction();
+        // Update simulation time with current event time
+        this.currentSimTime = currentEvent.getScheduledTime();
+        // Sometimes an action results in no other event
+        this.events.addAll(currentEvent.getGeneratedEvents());
+        Collections.sort(this.events);
+        // Increment loops
+        this.loops += 1;
     }
 
     private boolean simHasEnded() {
