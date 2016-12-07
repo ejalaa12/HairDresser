@@ -1,6 +1,6 @@
 package com.ejalaa.environment;
 
-import com.ejalaa.peoples.Worker;
+import com.ejalaa.peoples.Hairdresser;
 
 import java.util.ArrayList;
 
@@ -10,17 +10,17 @@ import java.util.ArrayList;
 public class Environment {
 
     private Salon salon;
-    private ArrayList<Worker> workers, clients;
+    private ArrayList<Hairdresser> hairdressers, clients;
 
-    public Environment(ArrayList<Worker> workers) {
+    public Environment(ArrayList<Hairdresser> hairdressers) {
         super();
-        this.workers = workers;
+        this.hairdressers = hairdressers;
 //        this.salon = new Salon();
     }
 
     public Environment(Salon salon) {
         super();
         this.salon = salon;
-        this.workers = new ArrayList<>();
+        this.hairdressers = new ArrayList<>();
     }
 }

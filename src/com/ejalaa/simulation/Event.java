@@ -24,12 +24,12 @@ public abstract class Event implements Comparable<Event> {
     /*
     Constructor
      */
-    protected Event(String description, LocalDateTime scheduledTime, String creator) {
+    protected Event(String creator, LocalDateTime scheduledTime, String description) {
         // TODO: 04/12/2016 add postedTime in parameters and attributes
         super();
-        this.description = description;
-        this.scheduledTime = scheduledTime;
         this.creator = creator;
+        this.scheduledTime = scheduledTime;
+        this.description = description;
         this.generatedEvents = new ArrayList<>();
     }
 

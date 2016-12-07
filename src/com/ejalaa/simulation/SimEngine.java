@@ -5,6 +5,7 @@ import com.ejalaa.logging.Logger;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
 
 /**
  * The simulator engine that handles the list of event
@@ -13,13 +14,17 @@ public class SimEngine {
 
     private static final String className = "SimEngine";
     private static final long MAX_LOOPS = 1000000L;
-    private ArrayList<Event> events;
-    private LocalDateTime currentSimTime, endSimTime;
-    private int loops;
 
-    public SimEngine(LocalDateTime endSimTime) {
+    private ArrayList<Event> events;
+    private LocalDateTime startSimTime, currentSimTime, endSimTime;
+    private int loops;
+    private Random random;
+
+    public SimEngine(long seed, LocalDateTime startSimTime, LocalDateTime endSimTime) {
         this.events = new ArrayList<>();
-        this.currentSimTime = LocalDateTime.MIN;
+        this.random = new Random(seed);
+        this.startSimTime = startSimTime;
+        this.currentSimTime = startSimTime;
         this.endSimTime = endSimTime;
         this.loops = 0;
     }
@@ -33,7 +38,6 @@ public class SimEngine {
         }
     }
 
-
     public void loop() {
         while (!simHasEnded()) {
             simStep();
@@ -46,10 +50,10 @@ public class SimEngine {
         Event currentEvent = this.events.get(0);
         this.events.remove(0);
         Logger.getInstance().log(currentEvent);
+        // Update simulation time with current event time
+        currentSimTime = currentEvent.getScheduledTime();
         // Do the action of this event and get all generated events
         currentEvent.doAction();
-        // Update simulation time with current event time
-        this.currentSimTime = currentEvent.getScheduledTime();
         // Sometimes an action results in no other event
         this.events.addAll(currentEvent.getGeneratedEvents());
         Collections.sort(this.events);
@@ -63,5 +67,9 @@ public class SimEngine {
 
     public LocalDateTime getCurrentSimTime() {
         return currentSimTime;
+    }
+
+    public Random getRandom() {
+        return random;
     }
 }

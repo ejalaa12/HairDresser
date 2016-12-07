@@ -2,6 +2,7 @@ package com.ejalaa.environment;
 
 import com.ejalaa.simulation.Entity;
 import com.ejalaa.simulation.Event;
+import com.ejalaa.simulation.SimEngine;
 
 import java.time.LocalDateTime;
 
@@ -16,8 +17,9 @@ public abstract class ClientGenerator extends Entity {
     private int nbOfClientGenerated;
     private LocalDateTime nextClientTime;
 
-    public ClientGenerator(LocalDateTime simDateTime) {
-        this.nextClientTime = simDateTime;
+    public ClientGenerator(SimEngine simEngine) {
+        super(simEngine);
+        this.nextClientTime = simEngine.getCurrentSimTime();
         updateNextEvent();
     }
 

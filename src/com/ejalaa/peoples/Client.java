@@ -3,6 +3,7 @@ package com.ejalaa.peoples;
 import com.ejalaa.environment.Salon;
 import com.ejalaa.logging.Logger;
 import com.ejalaa.simulation.Event;
+import com.ejalaa.simulation.SimEngine;
 
 import java.time.LocalDateTime;
 
@@ -19,28 +20,22 @@ public abstract class Client extends People {
     private static final String className = "Client ";
     private int maxWaitingQueueToStay = 2; // max queue size that makes a client stay
     private String descName;
-    private LocalDateTime arrivingTimeAtHairdresser, finishedTime;
+    private LocalDateTime arrivedTime, finishedTime;
     private State state;
-    // TODO: 04/12/2016 create dismissed event so that the environment can remove it from the list
     private Event checkHairDresserAndQueueStateEvent, hairdressingDoneEvent;
     private Salon salon;
 
     /*
     CONSTRUCTOR
      */
-    protected Client(String name, Salon salon, LocalDateTime arrivingTimeAtHairdresser) {
-        super(name);
+    protected Client(SimEngine simEngine, String name, Salon salon) {
+        super(simEngine, name);
         this.descName = className + this.name;
         this.salon = salon;
-        this.arrivingTimeAtHairdresser = arrivingTimeAtHairdresser;
+        this.arrivedTime = arrivedTime;
         this.state = State.Created;
-        // TODO: 06/12/2016 Log the time when the class is created, maybe in entity.super()
         // event creation
         defineIsHairdresserOpenAndLowQueueEvent();
-    }
-
-    protected int getMaxWaitingQueueToStay() {
-        return this.maxWaitingQueueToStay;
     }
 
     /*
@@ -49,8 +44,12 @@ public abstract class Client extends People {
     * ********************************************************************
     */
 
+    protected int getMaxWaitingQueueToStay() {
+        return this.maxWaitingQueueToStay;
+    }
+
     public LocalDateTime getArrivedTime() {
-        return arrivingTimeAtHairdresser;
+        return arrivedTime;
     }
 
     public LocalDateTime getFinishedTime() {
@@ -62,13 +61,13 @@ public abstract class Client extends People {
     }
 
     /*
-        * ********************************************************************
-        * EVENTS
-        * ********************************************************************
-        */
+    * ********************************************************************
+    * EVENTS
+    * ********************************************************************
+    */
     private void defineIsHairdresserOpenAndLowQueueEvent() {
         this.checkHairDresserAndQueueStateEvent = new Event("Is the hairdresser Open and not a lot of people?",
-                this.arrivingTimeAtHairdresser, this.descName) {
+                this.arrivedTime, this.descName) {
             @Override
             public void doAction() {
                 checkingHairdresserAction(this.getScheduledTime());
