@@ -1,5 +1,6 @@
 package com.ejalaa.environment;
 
+import com.ejalaa.peoples.Client;
 import com.ejalaa.simulation.Entity;
 import com.ejalaa.simulation.Event;
 import com.ejalaa.simulation.SimEngine;
@@ -9,44 +10,60 @@ import java.time.LocalDateTime;
 /**
  * Client generator generates new client at stepped time
  */
-public abstract class ClientGenerator extends Entity {
+public class ClientGenerator extends Entity {
 
     private static final String name = "Client Generator";
-    private int timeBetweenClient = 10;     // in min
-    private Event nextClientEvent;
+    private int timeBetweenClient = 60 * 4;     // in min
     private int nbOfClientGenerated;
     private LocalDateTime nextClientTime;
+    private Salon salon;
 
-    public ClientGenerator(SimEngine simEngine) {
+    public ClientGenerator(SimEngine simEngine, Salon salon) {
         super(simEngine);
+        this.salon = salon;
         this.nextClientTime = simEngine.getCurrentSimTime();
-        updateNextEvent();
+        // Update time next client is created
+        updateNextClientTime();
+
     }
 
-    private void updateNextEvent() {
-        // Update time next client is created
+    @Override
+    public void start() {
+        simEngine.addEvent(new CreatingClientEvent());
+    }
+
+    private void updateNextClientTime() {
         this.nextClientTime = this.nextClientTime.plusMinutes(this.timeBetweenClient);
-        // Then update the Event of creating a client
-        String clientName = String.format("Client-%d", getNbOfClientGenerated());
-        String eventDesc = String.format("Creation of %s", clientName);
-        nextClientEvent = new Event(eventDesc, this.nextClientTime, name) {
-            @Override
-            public void doAction() {
-                createNewClientAction(clientName, getScheduledTime());
-                updateNbOfClientGenerated();
-                updateNextEvent();
-//                addGeneratedEvent(getNextEvent());
-            }
-        };
     }
 
     private int getNbOfClientGenerated() {
         return nbOfClientGenerated;
     }
 
-    private void updateNbOfClientGenerated() {
-        this.nbOfClientGenerated += 1;
+    /*
+    * ********************************************************************
+    * Events
+    * ********************************************************************
+    */
+    private class CreatingClientEvent extends Event {
+        private Client createdClient;
+
+        CreatingClientEvent() {
+            super(ClientGenerator.name, nextClientTime, "Creating a Client ");
+            String name = String.format("%d", ClientGenerator.this.getNbOfClientGenerated());
+            createdClient = new Client(simEngine, name, ClientGenerator.this.salon);
+            setDescription("Creating " + createdClient.name);
+        }
+
+        @Override
+        public void doAction() {
+            createdClient.arrivesAt(nextClientTime);
+            ClientGenerator.this.nbOfClientGenerated += 1;
+            // Now next Client
+            updateNextClientTime();
+            simEngine.addEvent(new CreatingClientEvent());
+        }
     }
 
-    abstract void createNewClientAction(String name, LocalDateTime timeToAppear);
+
 }

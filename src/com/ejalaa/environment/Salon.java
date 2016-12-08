@@ -6,6 +6,7 @@ import com.ejalaa.simulation.Entity;
 import com.ejalaa.simulation.Event;
 import com.ejalaa.simulation.SimEngine;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Random;
@@ -35,7 +36,6 @@ public class Salon extends Entity {
     private int hairDressingDuration = 30;
     private ArrayList<Client> waitingClientsList;
     private int clientHandled;
-    private Event clientArrived, clientHasFinished;
 
     // Statistics
     private int openedDays;
@@ -57,17 +57,26 @@ public class Salon extends Entity {
         this.openedDays = 0;
     }
 
-    // TODO: 07/12/2016 make salon open only tuesday to saturday
+    @Override
+    public void start() {
+        simEngine.addEvent(getNextEvent());
+    }
+
     private void updateNextOpeningTime() {
-        if (simEngine.getCurrentSimTime().getHour() > 9) {
-            this.nextOpeningTime = simEngine.getCurrentSimTime().plusDays(1);
+        int weekday = simEngine.getCurrentSimTime().getDayOfWeek().getValue();
+        // opens only between
+        if (DayOfWeek.TUESDAY.getValue() <= weekday && weekday < DayOfWeek.SATURDAY.getValue()) {
+            if (simEngine.getCurrentSimTime().getHour() > 9) {
+                nextOpeningTime = simEngine.getCurrentSimTime().plusDays(1);
+            } else {
+                // If the starting time of the simulation is before opening then we can open the same day
+                nextOpeningTime = simEngine.getCurrentSimTime();
+            }
         } else {
-            // If the starting time of the simulation is before opening then we can open the same day
-            this.nextOpeningTime = simEngine.getCurrentSimTime();
+            nextOpeningTime = simEngine.getCurrentSimTime().plusWeeks(1).with(DayOfWeek.TUESDAY);
+
         }
-        this.nextOpeningTime = this.nextOpeningTime.withHour(9);
-        this.nextOpeningTime = this.nextOpeningTime.withMinute(0);
-        this.nextOpeningTime = this.nextOpeningTime.withSecond(0);
+        this.nextOpeningTime = this.nextOpeningTime.withHour(9).withMinute(0).withSecond(0);
         // Let's add some randomness with an offset
         int offset = rand.nextInt(30) - 30 / 2;
         this.nextOpeningTime = this.nextOpeningTime.plusMinutes(offset);
@@ -84,13 +93,19 @@ public class Salon extends Entity {
         this.nextClosingTime = this.nextClosingTime.plusMinutes(offset);
     }
 
-    public Event getNextEvent() {
+    private Event getNextEvent() {
         if (isOpen) {
             return new CloseEvent();
         } else {
             return new OpenEvent();
         }
     }
+
+    /*
+    * ********************************************************************
+    * Getter and Setter
+    * ********************************************************************
+    */
 
     public boolean isOpen() {
         return isOpen;
@@ -99,12 +114,6 @@ public class Salon extends Entity {
     public ArrayList<Client> getWaitingClientList() {
         return this.waitingClientsList;
     }
-
-    /*
-    * ********************************************************************
-    * Getter and Setter
-    * ********************************************************************
-    */
 
     public int getOpenedDays() {
         return openedDays;

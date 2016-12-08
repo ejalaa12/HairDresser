@@ -11,4 +11,5 @@ public abstract class Entity {
         this.simEngine = simEngine;
     }
 
+    public abstract void start();
 }

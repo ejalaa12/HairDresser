@@ -5,6 +5,7 @@ import com.ejalaa.logging.Logger;
 import com.ejalaa.peoples.Client;
 import com.ejalaa.simulation.SimEngine;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 
 public class Main {
@@ -14,7 +15,18 @@ public class Main {
     public static void main(String[] args) {
         Main m = new Main();
         m.realMain();
+//        m.test();
 
+    }
+
+    private void test() {
+        LocalDateTime localDateTime = LocalDateTime.of(2016, 12, 8, 9, 0);
+        System.out.println(localDateTime.getDayOfWeek().compareTo(DayOfWeek.MONDAY));
+        Logger.getInstance().log(localDateTime);
+        localDateTime = localDateTime.plusWeeks(1);
+        Logger.getInstance().log(localDateTime);
+        localDateTime = localDateTime.with(DayOfWeek.TUESDAY);
+        Logger.getInstance().log(localDateTime);
     }
 
     private void realMain() {
@@ -28,12 +40,13 @@ public class Main {
         Salon salon = new Salon(simEngine);
         // Client
         Client bob = new Client(simEngine, "Bob", salon);
-        bob.setArrivedTime(LocalDateTime.of(2016, 12, 10, 15, 0));
-        bob.start();
+        bob.arrivesAt(LocalDateTime.of(2016, 12, 10, 15, 0));
+//        bob.start();
+        // Client Generator
+//        ClientGenerator clientGenerator = new ClientGenerator(simEngine, salon);
 
-
-        simEngine.addEvent(salon.getNextEvent());
-//        simEngine.addEvent(bob.getNextEvent());
+        salon.start();
+//        clientGenerator.start();
 
         simEngine.loop();
         Logger.getInstance().log(LocalDateTime.now());

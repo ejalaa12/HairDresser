@@ -18,7 +18,7 @@ public class Logger {
 
     static {
         logicalTimeFormatter = DateTimeFormatter.ISO_TIME;
-        logicalDateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        logicalDateFormatter = DateTimeFormatter.ofPattern("EEE dd, MMM yyyy");
 
         DateTimeFormatterBuilder dtfb = new DateTimeFormatterBuilder();
         dtfb.parseCaseInsensitive();

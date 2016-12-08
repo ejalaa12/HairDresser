@@ -40,6 +40,11 @@ public class Client extends People {
         simEngine.addEvent(new CheckSalonEvent());
     }
 
+    public void arrivesAt(LocalDateTime arrivedTime) {
+        setArrivedTime(arrivedTime);
+        start();
+    }
+
     /*
     * ********************************************************************
     * GETTER AND SETTER

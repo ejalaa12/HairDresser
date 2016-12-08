@@ -10,4 +10,8 @@ public class Hairdresser extends People {
         super(simEngine, name);
     }
 
+    @Override
+    public void start() {
+
+    }
 }
