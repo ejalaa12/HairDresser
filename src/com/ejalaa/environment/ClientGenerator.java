@@ -12,14 +12,14 @@ import java.time.LocalDateTime;
  */
 public class ClientGenerator extends Entity {
 
-    private static final String name = "Client Generator";
-    private int timeBetweenClient = 60 * 4;     // in min
+    private int timeBetweenClient = 12;     // in min
     private int nbOfClientGenerated;
     private LocalDateTime nextClientTime;
     private Salon salon;
 
     public ClientGenerator(SimEngine simEngine, Salon salon) {
         super(simEngine);
+        name = "Client Generator";
         this.salon = salon;
         this.nextClientTime = simEngine.getCurrentSimTime();
         // Update time next client is created
@@ -34,10 +34,19 @@ public class ClientGenerator extends Entity {
 
     private void updateNextClientTime() {
         this.nextClientTime = this.nextClientTime.plusMinutes(this.timeBetweenClient);
+        if (!salon.isOpen()) {
+            this.nextClientTime = salon.getNextOpeningTime();
+        }
     }
 
-    private int getNbOfClientGenerated() {
+    public int getNbOfClientGenerated() {
         return nbOfClientGenerated;
+    }
+
+    @Override
+    public void printStats() {
+        super.printStats();
+        System.out.println(String.format("%-30s: %20d", "Client generated", nbOfClientGenerated));
     }
 
     /*
@@ -49,8 +58,8 @@ public class ClientGenerator extends Entity {
         private Client createdClient;
 
         CreatingClientEvent() {
-            super(ClientGenerator.name, nextClientTime, "Creating a Client ");
-            String name = String.format("%d", ClientGenerator.this.getNbOfClientGenerated());
+            super(ClientGenerator.this.name, nextClientTime, "Creating a Client ");
+            String name = String.format("No-%03d", ClientGenerator.this.getNbOfClientGenerated());
             createdClient = new Client(simEngine, name, ClientGenerator.this.salon);
             setDescription("Creating " + createdClient.name);
         }
@@ -64,6 +73,4 @@ public class ClientGenerator extends Entity {
             simEngine.addEvent(new CreatingClientEvent());
         }
     }
-
-
 }
