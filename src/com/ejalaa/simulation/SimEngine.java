@@ -52,6 +52,10 @@ public class SimEngine {
         Logger.getInstance().log(currentEvent);
         // Update simulation time with current event time
         currentSimTime = currentEvent.getScheduledTime();
+        // break if the event is after endSimTime
+        if (currentSimTime.isAfter(endSimTime)) {
+            return;
+        }
         // Do the action of this event and get all generated events
         currentEvent.doAction();
         // Increment loops
@@ -59,7 +63,7 @@ public class SimEngine {
     }
 
     private boolean simHasEnded() {
-        return this.events.isEmpty() || this.currentSimTime.isAfter(this.endSimTime) || this.loops >= MAX_LOOPS;
+        return events.isEmpty() || currentSimTime.isAfter(endSimTime) || loops >= MAX_LOOPS;
     }
 
     public LocalDateTime getCurrentSimTime() {
