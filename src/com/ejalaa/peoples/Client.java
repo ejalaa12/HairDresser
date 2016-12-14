@@ -18,11 +18,10 @@ public class Client extends People {
     * ********************************************************************
     */
     private static final String className = "Client ";
-    private int maxWaitingQueueToStay = 2; // max queue size that makes a client stay
+    private int queueSizePatience = 3; // max queue size that makes a client stay
     private String descName;
     private LocalDateTime arrivedTime, finishedTime;
     private State state;
-    private Event checkSalonOpenEvent, hairdressingDoneEvent;
     private Salon salon;
 
     /*
@@ -37,7 +36,7 @@ public class Client extends People {
 
     public void start() {
         // First Event
-        simEngine.addEvent(new CheckSalonEvent());
+        simEngine.addEvent(new ArrivesAtSalonEvent());
     }
 
     public void arrivesAt(LocalDateTime arrivedTime) {
@@ -59,18 +58,34 @@ public class Client extends People {
         this.arrivedTime = arrivedTime;
     }
 
-    public LocalDateTime getFinishedTime() {
-        return finishedTime;
+    public int getQueueSizePatience() {
+        return queueSizePatience;
     }
 
-    public void goAfter(int hairDressingDuration) {
-        finishedTime = arrivedTime.plusMinutes(hairDressingDuration);
-        simEngine.addEvent(new LeavingEvent());
+    public void LeaveFull() {
+        Logger.getInstance().log(name, simEngine.getCurrentSimTime(), "Too much waiting people. I'm leaving");
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void hairdressingFinished() {
+        state = State.Gone;
+        Logger.getInstance().log(name, simEngine.getCurrentSimTime(), "Hairdressing done I'm leaving");
+    }
+
+    public void setGettingHairdress() {
+        state = State.GettingHairdress;
+    }
+
+    public void setWating() {
+        state = State.Waiting;
     }
 
     // states
     protected enum State {
-        Created, Inside, Gone
+        Created, Inside, Waiting, GettingHairdress, Gone
 
     }
 
@@ -79,9 +94,9 @@ public class Client extends People {
     * EVENTS
     * ********************************************************************
     */
-    private class CheckSalonEvent extends Event {
+    private class ArrivesAtSalonEvent extends Event {
 
-        CheckSalonEvent() {
+        ArrivesAtSalonEvent() {
             super(Client.this.descName, Client.this.getArrivedTime(), "Checking salon");
         }
 
@@ -92,29 +107,11 @@ public class Client extends People {
                 Client.this.state = State.Inside;
                 Client.this.salon.handleClient(Client.this);
             } else {
-                Logger.getInstance().log(Client.this.descName, scheduledTime, "I can not enter");
+                Logger.getInstance().log(Client.this.descName, scheduledTime, "Salon is closed -> I can not enter");
                 Client.this.state = State.Gone;
             }
 
         }
     }
 
-    /*
-    * ********************************************************************
-    * MACHINE STATE
-    * ********************************************************************
-    */
-
-    private class LeavingEvent extends Event {
-
-        LeavingEvent() {
-            super(Client.this.descName, finishedTime, "HairDressing Done. I'm Leaving");
-        }
-
-        @Override
-        public void doAction() {
-            Client.this.state = State.Gone;
-            Client.this.salon.letGo(Client.this);
-        }
-    }
 }
