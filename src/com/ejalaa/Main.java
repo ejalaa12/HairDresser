@@ -1,12 +1,14 @@
 package com.ejalaa;
 
+import com.ejalaa.environment.ClientGenerator;
 import com.ejalaa.environment.Salon;
 import com.ejalaa.logging.Logger;
-import com.ejalaa.peoples.Client;
+import com.ejalaa.peoples.Hairdresser;
 import com.ejalaa.simulation.SimEngine;
 
-import java.time.DayOfWeek;
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 public class Main {
 
@@ -20,42 +22,90 @@ public class Main {
     }
 
     private void test() {
-        LocalDateTime localDateTime = LocalDateTime.of(2016, 12, 8, 9, 0);
-        System.out.println(localDateTime.getDayOfWeek().compareTo(DayOfWeek.MONDAY));
-        Logger.getInstance().log(localDateTime);
-        localDateTime = localDateTime.plusWeeks(1);
-        Logger.getInstance().log(localDateTime);
-        localDateTime = localDateTime.with(DayOfWeek.TUESDAY);
-        Logger.getInstance().log(localDateTime);
+        Box box1 = new Box("bob");
+        Box box2 = new Box("alice");
+        box1.open();
+        ArrayList<Box> boxes = new ArrayList<>();
+        boxes.add(box1);
+        boxes.add(box2);
+        Box res = boxes.stream().filter(Box::isOpen).findFirst().orElse(new Box("null"));
+        System.out.println(res.name);
     }
 
     private void realMain() {
         Logger.getInstance().log(LocalDateTime.now());
-        // Start time of simulation (datetime of first event)
+        /*
+        * ********************************************************************
+        * Starting and ending time of simulation
+        * ********************************************************************
+        */
         LocalDateTime simStart = LocalDateTime.of(2016, 11, 10, 8, 45);
-        // End time of simulation is 29/12/2016 at 21:45
-        LocalDateTime simulationEndTime = LocalDateTime.of(2016, 12, 10, 20, 45);
+        LocalDateTime simulationEndTime = LocalDateTime.of(2016, 12, 10, 21, 45);
+        /*
+        * ********************************************************************
+        * Simulator Engine
+        * ********************************************************************
+        */
         SimEngine simEngine = new SimEngine(seed, simStart, simulationEndTime);
-        // Opening time of the hairdresser 10/12/2016 at 21:45
+        /*
+        * ********************************************************************
+        * Creation of entities
+        * ********************************************************************
+        */
         Salon salon = new Salon(simEngine);
-        // Client
-        Client bob = new Client(simEngine, "Bob", salon);
-        bob.arrivesAt(LocalDateTime.of(2016, 12, 10, 15, 0));
+//        Client bob = new Client(simEngine, "Bob", salon);
+//        bob.setArrivedTime(LocalDateTime.of(2016, 11, 18, 10, 45));
 //        bob.start();
-        // Client Generator
-//        ClientGenerator clientGenerator = new ClientGenerator(simEngine, salon);
-
+        Hairdresser Sandou = new Hairdresser(simEngine, "Sandou", salon);
+        salon.addHairdresser(Sandou);
+        ClientGenerator clientGenerator = new ClientGenerator(simEngine, salon);
+//        bob.arrivesAt(LocalDateTime.of(2016, 12, 10, 15, 0));
         salon.start();
-//        clientGenerator.start();
+        clientGenerator.start();
 
+        Logger.getInstance().turnOn();
+        Logger.getInstance().turnCsvOn();
         simEngine.loop();
         Logger.getInstance().log(LocalDateTime.now());
 
-        System.out.println("-------------------------------------------------------");
+        System.out.println("=======================================================");
         System.out.println("SIMULATION RESULTS");
-        System.out.println("-------------------------------------------------------");
-        System.out.println(String.format("Opened days:\t %d", salon.getOpenedDays()));
-        System.out.println(String.format("Client handled:\t %d", salon.getClientHandled()));
-        // modif pour develop
+        System.out.println("=======================================================");
+        salon.printStats();
+        printSep(40, "-");
+        clientGenerator.printStats();
+        printSep(50, "=");
+
+        try {
+            Logger.getInstance().close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void printSep(int x, String c) {
+        System.out.println(new String(new char[x]).replace("\0", c));
+    }
+
+    private class Box {
+        public String name;
+        private boolean open;
+
+        public Box(String name) {
+            this.name = name;
+            open = false;
+        }
+
+        public void close() {
+            open = false;
+        }
+
+        public void open() {
+            open = true;
+        }
+
+        public boolean isOpen() {
+            return open;
+        }
     }
 }
