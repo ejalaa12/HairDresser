@@ -58,6 +58,10 @@ public class Main {
 //        bob.start();
         Hairdresser Sandou = new Hairdresser(simEngine, "Sandou", salon);
         salon.addHairdresser(Sandou);
+        Hairdresser Pushmina = new Hairdresser(simEngine, "Pushmina", salon);
+        salon.addHairdresser(Pushmina);
+        Hairdresser Traore = new Hairdresser(simEngine, "Traore", salon);
+        salon.addHairdresser(Traore);
         ClientGenerator clientGenerator = new ClientGenerator(simEngine, salon);
 //        bob.arrivesAt(LocalDateTime.of(2016, 12, 10, 15, 0));
         salon.start();

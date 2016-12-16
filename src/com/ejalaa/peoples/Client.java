@@ -18,7 +18,7 @@ public class Client extends People {
     * ********************************************************************
     */
     private static final String className = "Client ";
-    private int queueSizePatience = 3; // max queue size that makes a client stay
+    private int queueSizePatience = 6; // max queue size that makes a client stay
     private String descName;
     private LocalDateTime arrivedTime, finishedTime;
     private State state;

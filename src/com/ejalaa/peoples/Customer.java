@@ -6,18 +6,17 @@ import com.ejalaa.simulation.SimEngine;
 /**
  * A Customer is a client that comes often and has a favourite Hairdresser
  */
-public abstract class Customer extends Client {
+public class Customer extends Client {
 
     /*
     * ********************************************************************
     * ATTRIBUTES
     * ********************************************************************
     */
-    private static final String className = "Customer ";
-    private int maxWaitingQueueToStay = 6; // max queue size that makes a client stay
+    Hairdresser favorite;
 
-
-    protected Customer(SimEngine simEngine, String name, Salon salon) {
+    protected Customer(SimEngine simEngine, String name, Salon salon, Hairdresser favorite) {
         super(simEngine, name, salon);
+        this.favorite = favorite;
     }
 }
