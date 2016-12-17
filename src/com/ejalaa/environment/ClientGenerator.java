@@ -49,6 +49,10 @@ public class ClientGenerator extends Entity {
         System.out.println(String.format("%-30s: %20d", "Client generated", nbOfClientGenerated));
     }
 
+    public void setFrequency(int frequencyInMin) {
+        timeBetweenClient = frequencyInMin;
+    }
+
     /*
     * ********************************************************************
     * Events
@@ -61,7 +65,7 @@ public class ClientGenerator extends Entity {
             super(ClientGenerator.this.name, nextClientTime, "Creating a Client ");
             String name = String.format("No-%03d", ClientGenerator.this.getNbOfClientGenerated());
             createdClient = new Client(simEngine, name, ClientGenerator.this.salon);
-            setDescription("Creating " + createdClient.name);
+            setDescription("Creating " + createdClient.getName());
         }
 
         @Override

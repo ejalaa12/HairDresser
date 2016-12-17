@@ -4,12 +4,14 @@ import com.ejalaa.environment.salonEvents.CloseEvent;
 import com.ejalaa.environment.salonEvents.OpenEvent;
 import com.ejalaa.logging.Logger;
 import com.ejalaa.peoples.Client;
+import com.ejalaa.peoples.Customer;
 import com.ejalaa.peoples.Hairdresser;
 import com.ejalaa.simulation.Entity;
 import com.ejalaa.simulation.Event;
 import com.ejalaa.simulation.SimEngine;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Random;
@@ -37,11 +39,13 @@ public class Salon extends Entity {
     private ArrayList<Client> waitingClientsList;
 
     // Statistics
-    private int clientHandled, clientLost;
+    private int clientHandled, clientLost, finishedClient;
     private int openedDays, completedDays;
+    private Duration averageWaitingTime;
 
     // Workers
     private ArrayList<Hairdresser> hairdressers;
+    private int clientDuringCloseTime;
 
     public Salon(SimEngine simEngine) {
         super(simEngine);
@@ -62,11 +66,9 @@ public class Salon extends Entity {
         completedDays = 0;
         clientHandled = 0;
         clientLost = 0;
-
-    }
-
-    public String getName() {
-        return name;
+        clientDuringCloseTime = 0;
+        finishedClient = 0;
+        averageWaitingTime = Duration.ZERO;
     }
 
     @Override
@@ -121,6 +123,10 @@ public class Salon extends Entity {
     * ********************************************************************
     */
 
+    public String getName() {
+        return name;
+    }
+
     public boolean isOpen() {
         return isOpen;
     }
@@ -137,21 +143,51 @@ public class Salon extends Entity {
     Defines what to do when a client enters the shop
      */
     public void handleClient(Client client) {
-        Hairdresser freeHairdresser = getFreeHairDresser();
-        if (freeHairdresser != null) {
-            freeHairdresser.handleClient(client);
-            clientHandled += 1;
-        } else if (waitingClientsList.size() < client.getQueueSizePatience()) {
-            client.setWating();
-            waitingClientsList.add(client);
-            String str = String.format("%s added to waiting list (%d)", client.name, waitingClientsList.size());
-            Logger.getInstance().log(name, client.getArrivedTime(), str);
+        // Handling client
+        if (anyHairDresserIsPresent()) {
+            Hairdresser freeHairdresser = getFreeHairDresser();
+            if (freeHairdresser != null) {
+                // if a hairdresser is free, get hairdressed by him
+                freeHairdresser.handleClient(client);
+            } else if (waitingClientsList.size() < client.getQueueSizePatience()) {
+                // if no hairdresser is free, wait if the waiting queue is low
+                client.setWaiting();
+                waitingClientsList.add(client);
+                String str = String.format("%s added to waiting list (%d)", client.getName(), waitingClientsList.size());
+                Logger.getInstance().log(name, client.getArrivedTime(), str);
+            } else {
+                // else just leave not happy
+                client.leaveBecauseLongQueue();
+                clientLost += 1;
+                String str = String.format("Couldn't handle client %s too much people already waiting (%d)", client.getName(), waitingClientsList.size());
+                Logger.getInstance().log(name, client.getArrivedTime(), str);
+            }
         } else {
-            client.LeaveFull();
+            // else just leave not happy
             clientLost += 1;
-            String str = String.format("Couldn't handle client %s too much people already waiting (%d)", client.name, waitingClientsList.size());
+            String str = String.format("Sorry no hairdressers today...");
             Logger.getInstance().log(name, client.getArrivedTime(), str);
+            client.leaveBecauseNoHairdressers();
         }
+    }
+
+    private boolean anyHairDresserIsPresent() {
+        for (Hairdresser h : hairdressers) {
+            if (h.isPresent()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int waitingListFor(Hairdresser fav) {
+        int count = 0;
+        for (Client c : waitingClientsList) {
+            if ((c instanceof Customer) && (((Customer) c).getFavorite() == fav)) {
+                count += 1;
+            }
+        }
+        return count;
     }
 
     public LocalDateTime getNextOpeningTime() {
@@ -162,19 +198,31 @@ public class Salon extends Entity {
         hairdressers.add(newHairdresser);
     }
 
-    /*
-    * ********************************************************************
-    * Client Handling
-    * ********************************************************************
-    */
-
     public int getClientHandled() {
         return clientHandled;
+    }
+
+    public void setClientHandled(int clientHandled) {
+        this.clientHandled = clientHandled;
     }
 
     public SimEngine getSimEngine() {
         return simEngine;
     }
+
+    public LocalDateTime getNextClosingTime() {
+        return nextClosingTime;
+    }
+
+    private Hairdresser getFreeHairDresser() {
+        return hairdressers.stream().filter(Hairdresser::isPresent).filter(Hairdresser::isFree).findFirst().orElse(null);
+    }
+
+    /*
+    * ********************************************************************
+    * Client Handling
+    * ********************************************************************
+    */
 
     public void open() {
         isOpen = true;
@@ -184,10 +232,9 @@ public class Salon extends Entity {
     public void close() {
         isOpen = false;
         completedDays += 1;
-    }
-
-    public LocalDateTime getNextClosingTime() {
-        return nextClosingTime;
+        // at closure we sent back all waiting clients
+//        clientLost += waitingClientsList.size();
+//        waitingClientsList.
     }
 
     public void printStats() {
@@ -196,16 +243,36 @@ public class Salon extends Entity {
         System.out.println(String.format("%-30s: %20d", "Completed days", completedDays));
         System.out.println(String.format("%-30s: %20d", "Client handled", clientHandled));
         for (Hairdresser h : hairdressers) {
-            System.out.println(String.format("%30s: %20d", h.name, h.getClientHandled()));
+            System.out.println(String.format("%30s: %20d", h.getName(), h.getClientHandled()));
         }
         System.out.println(String.format("%-30s: %20d", "Client Lost", clientLost));
+        System.out.println(String.format("%-30s: %20d", "Client during close", clientDuringCloseTime));
+        System.out.println(String.format("%-30s: %20s", "Average waiting time", averageWaitingTime.toString()));
     }
 
-    private Hairdresser getFreeHairDresser() {
-        return hairdressers.stream().filter(Hairdresser::isFree).findFirst().orElse(null);
+    public void makeTheCall() {
+        String msg = "Morning call: ";
+        for (Hairdresser h :
+                hairdressers) {
+            h.call();
+            msg += String.format("%s (%b)\t", h.getName(), h.isPresent());
+        }
+        Logger.getInstance().log(name, simEngine.getCurrentSimTime(), msg);
     }
 
-    public void incClientHandled() {
-        clientHandled += 1;
+    public void clientCameWhenClosed() {
+        clientDuringCloseTime += 1;
+    }
+
+    public void notifyClientLeaving(Client client) {
+        if (finishedClient != 0) {
+            averageWaitingTime = averageWaitingTime.multipliedBy(finishedClient);
+            averageWaitingTime = averageWaitingTime.plus(client.getWaitingTime());
+            finishedClient += 1;
+            averageWaitingTime = averageWaitingTime.dividedBy(finishedClient);
+        } else {
+            averageWaitingTime = client.getWaitingTime();
+            finishedClient += 1;
+        }
     }
 }

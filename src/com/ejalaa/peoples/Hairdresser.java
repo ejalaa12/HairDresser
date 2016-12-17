@@ -14,6 +14,9 @@ public class Hairdresser extends People {
     private int hairDressingDuration = 30;
     private int clientHandled;
     private Salon salon;
+    private boolean isPresent;
+    private int workedDays, notWorkedDays;
+    private double laziness;
 
     public Hairdresser(SimEngine simEngine, String name, Salon salon) {
         super(simEngine, name);
@@ -30,15 +33,16 @@ public class Hairdresser extends People {
     public void handleClient(Client client) {
         free = false;
         clientHandled += 1;
+        salon.setClientHandled(salon.getClientHandled() + 1);
+
+        // logging
         String msg = String.format("Taking care of %s", client.getName());
         client.setGettingHairdress();
         Logger.getInstance().log(name, simEngine.getCurrentSimTime(), msg);
+
+        // Next event for the hairdresser is finishing hairdressing
         simEngine.addEvent(new HairdressingFinishedEvent(client));
 //        client.goAfter(hairDressingDuration);
-    }
-
-    public void finishedWithClient() {
-        free = true;
     }
 
     public boolean isFree() {
@@ -47,6 +51,41 @@ public class Hairdresser extends People {
 
     public int getClientHandled() {
         return clientHandled;
+    }
+
+    public void call() {
+//        70 % of the time the hairdresser is present
+//        this check is done every opening of the salon
+        isPresent = simEngine.getRandom().nextFloat() > laziness;
+        if (isPresent) {
+            workedDays += 1;
+        } else {
+            notWorkedDays += 1;
+        }
+    }
+
+    public boolean isPresent() {
+        return isPresent;
+    }
+
+    public void setLaziness(double laziness) {
+        this.laziness = laziness;
+    }
+
+    public void setHairDressingDuration(int hairDressingDuration) {
+        this.hairDressingDuration = hairDressingDuration;
+    }
+
+    @Override
+    public void printStats() {
+        super.printStats();
+        float tot = workedDays + notWorkedDays;
+        System.out.println(String.format("%-30s: %20.2f %%", "Worked days", 100 * workedDays / tot));
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
     private class HairdressingFinishedEvent extends Event {
@@ -65,7 +104,6 @@ public class Hairdresser extends People {
                 Client nextClient = Hairdresser.this.salon.getWaitingClientList().get(0);
                 Hairdresser.this.salon.getWaitingClientList().remove(0);
                 Hairdresser.this.handleClient(nextClient);
-                Hairdresser.this.salon.incClientHandled();
             }
 
         }

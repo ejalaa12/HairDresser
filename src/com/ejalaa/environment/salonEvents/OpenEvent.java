@@ -19,6 +19,7 @@ public class OpenEvent extends Event {
     @Override
     public void doAction() {
         salon.open();
+        salon.makeTheCall();
         Logger.getInstance().log(salon.getName(), salon.getSimEngine().getCurrentSimTime(), "Salon Opened");
         salon.updateNextClosingTime();
         salon.getSimEngine().addEvent(salon.getNextEvent());
