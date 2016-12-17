@@ -9,8 +9,6 @@ import com.ejalaa.simulation.SimEngine;
  */
 public abstract class People extends Entity {
 
-    public String name;
-
     People(SimEngine simEngine, String name) {
         super(simEngine);
         this.name = name;

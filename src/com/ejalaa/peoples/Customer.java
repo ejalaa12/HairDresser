@@ -13,10 +13,15 @@ public class Customer extends Client {
     * ATTRIBUTES
     * ********************************************************************
     */
-    Hairdresser favorite;
+    private Hairdresser favorite;
 
     protected Customer(SimEngine simEngine, String name, Salon salon, Hairdresser favorite) {
         super(simEngine, name, salon);
         this.favorite = favorite;
+        this.queueSizePatience = 3;
+    }
+
+    public Hairdresser getFavorite() {
+        return favorite;
     }
 }

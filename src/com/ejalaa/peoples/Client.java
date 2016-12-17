@@ -5,6 +5,7 @@ import com.ejalaa.logging.Logger;
 import com.ejalaa.simulation.Event;
 import com.ejalaa.simulation.SimEngine;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 /**
@@ -18,11 +19,12 @@ public class Client extends People {
     * ********************************************************************
     */
     private static final String className = "Client ";
-    private int queueSizePatience = 6; // max queue size that makes a client stay
+    protected int queueSizePatience = 6; // max queue size that makes a client stay
     private String descName;
     private LocalDateTime arrivedTime, finishedTime;
     private State state;
     private Salon salon;
+    private Duration waitingTime;
 
     /*
     CONSTRUCTOR
@@ -62,8 +64,14 @@ public class Client extends People {
         return queueSizePatience;
     }
 
-    public void LeaveFull() {
-        Logger.getInstance().log(name, simEngine.getCurrentSimTime(), "Too much waiting people. I'm leaving");
+    public void leaveBecauseNoHairdressers() {
+        Logger.getInstance().log(descName, simEngine.getCurrentSimTime(), "No Hairdressers. I'm leaving :(");
+        state = State.Gone;
+    }
+
+    public void leaveBecauseLongQueue() {
+        Logger.getInstance().log(descName, simEngine.getCurrentSimTime(), "Long Queue. I'm leaving :(");
+        state = State.Gone;
     }
 
     public String getName() {
@@ -72,15 +80,22 @@ public class Client extends People {
 
     public void hairdressingFinished() {
         state = State.Gone;
-        Logger.getInstance().log(name, simEngine.getCurrentSimTime(), "Hairdressing done I'm leaving");
+        Logger.getInstance().log(descName, simEngine.getCurrentSimTime(), "Hairdressing done I'm leaving");
+        // notify salon so have feedback on the client experience
+        salon.notifyClientLeaving(this);
     }
 
     public void setGettingHairdress() {
+        waitingTime = Duration.between(arrivedTime, simEngine.getCurrentSimTime());
         state = State.GettingHairdress;
     }
 
-    public void setWating() {
+    public void setWaiting() {
         state = State.Waiting;
+    }
+
+    public Duration getWaitingTime() {
+        return waitingTime;
     }
 
     // states
@@ -108,6 +123,7 @@ public class Client extends People {
                 Client.this.salon.handleClient(Client.this);
             } else {
                 Logger.getInstance().log(Client.this.descName, scheduledTime, "Salon is closed -> I can not enter");
+                Client.this.salon.clientCameWhenClosed();
                 Client.this.state = State.Gone;
             }
 
