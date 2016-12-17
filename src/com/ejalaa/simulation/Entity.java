@@ -15,7 +15,11 @@ public abstract class Entity {
     public abstract void start();
 
     public void printStats() {
-        System.out.println(String.format("%-40s |", name));
+        System.out.println(String.format("%-40s | ------------", name));
         System.out.println(new String(new char[40]).replace("\0", "-"));
+    }
+
+    public String getName() {
+        return name;
     }
 }
