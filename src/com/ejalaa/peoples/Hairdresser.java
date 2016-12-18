@@ -18,6 +18,12 @@ public class Hairdresser extends People {
     private int workedDays, notWorkedDays;
     private double laziness;
 
+    /*
+    * ****************************************************************************************************************
+    * IMPORTANT STUFF
+    * ****************************************************************************************************************
+    */
+
     public Hairdresser(SimEngine simEngine, String name, Salon salon) {
         super(simEngine, name);
         this.free = true;
@@ -28,6 +34,17 @@ public class Hairdresser extends People {
     @Override
     public void start() {
 
+    }
+
+    public void call() {
+//        70 % of the time the hairdresser is present
+//        this check is done every opening of the salon
+        isPresent = simEngine.getRandom().nextFloat() > laziness;
+        if (isPresent) {
+            workedDays += 1;
+        } else {
+            notWorkedDays += 1;
+        }
     }
 
     public void handleClient(Client client) {
@@ -45,23 +62,18 @@ public class Hairdresser extends People {
 //        client.goAfter(hairDressingDuration);
     }
 
+    /*
+    * ****************************************************************************************************************
+    * GETTER AND SETTERS
+    * ****************************************************************************************************************
+    */
+
     public boolean isFree() {
         return free;
     }
 
     public int getClientHandled() {
         return clientHandled;
-    }
-
-    public void call() {
-//        70 % of the time the hairdresser is present
-//        this check is done every opening of the salon
-        isPresent = simEngine.getRandom().nextFloat() > laziness;
-        if (isPresent) {
-            workedDays += 1;
-        } else {
-            notWorkedDays += 1;
-        }
     }
 
     public boolean isPresent() {
@@ -76,6 +88,16 @@ public class Hairdresser extends People {
         this.hairDressingDuration = hairDressingDuration;
     }
 
+    public int getWorkedDays() {
+        return workedDays;
+    }
+
+    /*
+    * ****************************************************************************************************************
+    * PRINTING
+    * ****************************************************************************************************************
+    */
+
     @Override
     public void printStats() {
         super.printStats();
@@ -87,6 +109,12 @@ public class Hairdresser extends People {
     public String toString() {
         return name;
     }
+
+    /*
+    * ****************************************************************************************************************
+    * EVENTS
+    * ****************************************************************************************************************
+    */
 
     private class HairdressingFinishedEvent extends Event {
         private Client currentClient;

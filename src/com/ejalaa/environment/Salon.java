@@ -248,6 +248,7 @@ public class Salon extends Entity {
         System.out.println(String.format("%-30s: %20d", "Client Lost", clientLost));
         System.out.println(String.format("%-30s: %20d", "Client during close", clientDuringCloseTime));
         System.out.println(String.format("%-30s: %20s", "Average waiting time", averageWaitingTime.toString()));
+        System.out.println(String.format("%-30s: %20d", "BENEFIT", calculateBenefit()));
     }
 
     public void makeTheCall() {
@@ -274,5 +275,20 @@ public class Salon extends Entity {
             averageWaitingTime = client.getWaitingTime();
             finishedClient += 1;
         }
+    }
+
+    private int calculateBenefit() {
+        int expensePerOpeningDay = 100;
+        int incomePerClientHandled = 23;
+        int dailySalary = 100;
+        int totalIncome = clientHandled * incomePerClientHandled;
+        int totalWorkedDays = 0;
+        for (Hairdresser hairdresser : hairdressers) {
+            totalWorkedDays += hairdresser.getWorkedDays();
+        }
+        int totalExpense = openedDays * expensePerOpeningDay + dailySalary * totalWorkedDays;
+
+        int benefit = totalIncome - totalExpense;
+        return benefit;
     }
 }
