@@ -1,6 +1,6 @@
 package com.ejalaa.environment;
 
-import com.ejalaa.environment.salonEvents.CloseEvent;
+import com.ejalaa.environment.salonEvents.ClosingEvent;
 import com.ejalaa.environment.salonEvents.OpenEvent;
 import com.ejalaa.logging.Logger;
 import com.ejalaa.peoples.Client;
@@ -27,25 +27,21 @@ public class Salon extends Entity {
     * ********************************************************************
     */
     public static String address = "XVIe arrondissement, Paris";
-
-    // State
-    private boolean isOpen;
+    private SalonState salonState;
+    private boolean acceptClients;
     private LocalDateTime nextOpeningTime, nextClosingTime;
-
     // Transitions
     private Random rand;
-
     // Attributes about clients
     private ArrayList<Client> waitingClientsList;
-
     // Statistics
     private int clientHandled, clientLost, finishedClient;
     private int openedDays, completedDays;
-    private Duration averageWaitingTime;
-
+    private Duration averageWaitingTime, delayAfterClosing;
     // Workers
     private ArrayList<Hairdresser> hairdressers;
     private int clientDuringCloseTime;
+
 
     public Salon(SimEngine simEngine) {
         super(simEngine);
@@ -55,7 +51,9 @@ public class Salon extends Entity {
         hairdressers = new ArrayList<>();
 
         // Hairdresser is closed at the beginning
-        isOpen = false;
+        salonState = SalonState.Closed;
+        // And therefore accepts no clients
+        acceptClients = false;
 
         // update opening and closing time for the first time
         updateNextOpeningTime();
@@ -69,6 +67,11 @@ public class Salon extends Entity {
         clientDuringCloseTime = 0;
         finishedClient = 0;
         averageWaitingTime = Duration.ZERO;
+        delayAfterClosing = Duration.ZERO;
+    }
+
+    public boolean acceptClients() {
+        return acceptClients;
     }
 
     @Override
@@ -108,13 +111,20 @@ public class Salon extends Entity {
     }
 
     public Event getNextEvent() {
-        if (isOpen) {
-//            return new CloseEvent();
-            return new CloseEvent(this);
-        } else {
-//            return new OpenEvent();
-            return new OpenEvent(this);
+        switch (salonState) {
+            case Open:
+                return new ClosingEvent(this);
+            case Closing:
+                return null;
+            case Closed:
+                return new OpenEvent(this);
+            default:
+                return null;
         }
+    }
+
+    public String getName() {
+        return name;
     }
 
     /*
@@ -123,12 +133,8 @@ public class Salon extends Entity {
     * ********************************************************************
     */
 
-    public String getName() {
-        return name;
-    }
-
     public boolean isOpen() {
-        return isOpen;
+        return salonState == SalonState.Open;
     }
 
     public ArrayList<Client> getWaitingClientList() {
@@ -139,15 +145,19 @@ public class Salon extends Entity {
         return openedDays;
     }
 
+    public Duration getDelayAfterClosing() {
+        return delayAfterClosing;
+    }
+
     /*
-    Defines what to do when a client enters the shop
-     */
+        Defines what to do when a client enters the shop
+         */
     public void handleClient(Client client) {
         // Handling client
         if (anyHairDresserIsPresent()) {
             Hairdresser freeHairdresser = getFreeHairDresser();
             if (freeHairdresser != null) {
-                // if a hairdresser is free, get hairdressed by him
+                // if a hairdresser is free, get hairdressing by him
                 freeHairdresser.handleClient(client);
             } else if (waitingClientsList.size() < client.getQueueSizePatience()) {
                 // if no hairdresser is free, wait if the waiting queue is low
@@ -165,7 +175,7 @@ public class Salon extends Entity {
         } else {
             // else just leave not happy
             clientLost += 1;
-            String str = String.format("Sorry no hairdressers today...");
+            String str = "Sorry no hairdressers today...";
             Logger.getInstance().log(name, client.getArrivedTime(), str);
             client.leaveBecauseNoHairdressers();
         }
@@ -218,23 +228,35 @@ public class Salon extends Entity {
         return hairdressers.stream().filter(Hairdresser::isPresent).filter(Hairdresser::isFree).findFirst().orElse(null);
     }
 
+    public void open() {
+        salonState = SalonState.Open;
+        acceptClients = true;
+        openedDays += 1;
+    }
+
     /*
     * ********************************************************************
     * Client Handling
     * ********************************************************************
     */
 
-    public void open() {
-        isOpen = true;
-        openedDays += 1;
+    public void close() {
+        // TODO: 18/12/2016 save closing time
+        salonState = SalonState.Closed;
+        completedDays += 1;
+        updateAverageDelay();
+        simEngine.addEvent(getNextEvent());
     }
 
-    public void close() {
-        isOpen = false;
-        completedDays += 1;
-        // at closure we sent back all waiting clients
-//        clientLost += waitingClientsList.size();
-//        waitingClientsList.
+    private void updateAverageDelay() {
+        Duration delay = Duration.between(nextClosingTime, simEngine.getCurrentSimTime());
+        if (completedDays == 1) {
+            delayAfterClosing = delay;
+        } else {
+            delayAfterClosing = delayAfterClosing.multipliedBy(completedDays - 1);
+            delayAfterClosing = delayAfterClosing.plus(delay);
+            delayAfterClosing = delayAfterClosing.dividedBy(completedDays);
+        }
     }
 
     public void printStats() {
@@ -248,6 +270,7 @@ public class Salon extends Entity {
         System.out.println(String.format("%-30s: %20d", "Client Lost", clientLost));
         System.out.println(String.format("%-30s: %20d", "Client during close", clientDuringCloseTime));
         System.out.println(String.format("%-30s: %20s", "Average waiting time", averageWaitingTime.toString()));
+        System.out.println(String.format("%-30s: %20s", "Average delay after closing", delayAfterClosing.toString()));
         System.out.println(String.format("%-30s: %20d", "BENEFIT", calculateBenefit()));
     }
 
@@ -275,6 +298,25 @@ public class Salon extends Entity {
             averageWaitingTime = client.getWaitingTime();
             finishedClient += 1;
         }
+        closeIfLastClientOfTheDay();
+    }
+
+    private void closeIfLastClientOfTheDay() {
+        // if its the last client leaving then all hairdresser must be free and the queue is empty
+        boolean lastClient = salonState == SalonState.Closing && allHairDresserAreFree() && waitingClientsList.isEmpty();
+        if (lastClient) {
+            close();
+            Logger.getInstance().log(name, simEngine.getCurrentSimTime(), "Last client ! Salon Closed");
+        }
+    }
+
+    private boolean allHairDresserAreFree() {
+        for (Hairdresser h : hairdressers) {
+            if (!h.isFree()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private int calculateBenefit() {
@@ -290,5 +332,15 @@ public class Salon extends Entity {
 
         int benefit = totalIncome - totalExpense;
         return benefit;
+    }
+
+    public void stopAcceptingClients() {
+        acceptClients = false;
+        salonState = SalonState.Closing;
+    }
+
+    // State
+    private enum SalonState {
+        Open, Closing, Closed
     }
 }

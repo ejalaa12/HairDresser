@@ -37,7 +37,7 @@ public class ClientGenerator extends Entity {
         // let's add randomness
         int offset = simEngine.getRandom().nextInt(6) - 6 / 2;
         nextClientTime = nextClientTime.plusMinutes(offset);
-        if (!salon.isOpen()) {
+        if (!salon.isOpen() || !salon.acceptClients()) {
             this.nextClientTime = salon.getNextOpeningTime();
         }
     }

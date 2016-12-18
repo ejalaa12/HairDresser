@@ -117,7 +117,7 @@ public class Client extends People {
 
         @Override
         public void doAction() {
-            if (Client.this.salon.isOpen()) {
+            if (Client.this.salon.isOpen() && Client.this.salon.acceptClients()) {
                 Logger.getInstance().log(Client.this.descName, scheduledTime, "I can enter");
                 Client.this.state = State.Inside;
                 Client.this.salon.handleClient(Client.this);
