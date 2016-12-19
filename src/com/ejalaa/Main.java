@@ -60,6 +60,9 @@ public class Main {
         Hairdresser Traore = new Hairdresser(simEngine, "Traore", salon);
         Traore.setLaziness(0.1);
         salon.addHairdresser(Traore);
+        Hairdresser Ali = new Hairdresser(simEngine, "Ali", salon);
+        Ali.setLaziness(0.1);
+        salon.addHairdresser(Ali);
         ClientGenerator clientGenerator = new ClientGenerator(simEngine, salon);
         clientGenerator.setFrequency(12);
         salon.start();
@@ -71,7 +74,7 @@ public class Main {
         * ****************************************************************************************************************
         */
 
-        Logger.getInstance().turnOn();
+        Logger.getInstance().turnOff();
         Logger.getInstance().turnCsvOn();
 
         /*
@@ -93,12 +96,6 @@ public class Main {
         salon.printStats();
         printSep(40, "-");
         clientGenerator.printStats();
-        printSep(40, "-");
-        sandou.printStats();
-        printSep(40, "-");
-        Pushmina.printStats();
-        printSep(40, "-");
-        Traore.printStats();
         printSep(60, "=");
 
         try {
