@@ -276,10 +276,12 @@ public class Salon extends Entity {
 
     public void makeTheCall() {
         String msg = "Morning call: ";
-        for (Hairdresser h :
-                hairdressers) {
+        for (Hairdresser h : hairdressers) {
             h.call();
             msg += String.format("%s (%b)\t", h.getName(), h.isPresent());
+        }
+        if (!anyHairDresserIsPresent()) {
+            close();
         }
         Logger.getInstance().log(name, simEngine.getCurrentSimTime(), msg);
     }

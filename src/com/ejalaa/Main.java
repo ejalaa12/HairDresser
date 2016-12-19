@@ -32,7 +32,7 @@ public class Main {
         * ********************************************************************
         */
         LocalDateTime simStart = LocalDateTime.of(2016, 11, 10, 8, 45);
-        LocalDateTime simulationEndTime = LocalDateTime.of(2016, 11, 14, 21, 45);
+        LocalDateTime simulationEndTime = LocalDateTime.of(2017, 11, 14, 21, 45);
         /*
         * ********************************************************************
         * Simulator Engine
@@ -55,10 +55,10 @@ public class Main {
         sandou.setLaziness(0.1);
         salon.addHairdresser(sandou);
         Hairdresser Pushmina = new Hairdresser(simEngine, "Pushmina", salon);
-        Pushmina.setLaziness(0.5);
+        Pushmina.setLaziness(0.1);
         salon.addHairdresser(Pushmina);
         Hairdresser Traore = new Hairdresser(simEngine, "Traore", salon);
-        Traore.setLaziness(0.3);
+        Traore.setLaziness(0.1);
         salon.addHairdresser(Traore);
         ClientGenerator clientGenerator = new ClientGenerator(simEngine, salon);
         clientGenerator.setFrequency(12);
@@ -71,7 +71,7 @@ public class Main {
         * ****************************************************************************************************************
         */
 
-        Logger.getInstance().turnOff();
+        Logger.getInstance().turnOn();
         Logger.getInstance().turnCsvOn();
 
         /*
