@@ -11,7 +11,7 @@ import com.ejalaa.simulation.SimEngine;
 public class Hairdresser extends People {
 
     private boolean free;
-    private int hairDressingDuration = 30;
+    private int hairDressingDuration = 19;
     private int clientHandled;
     private Salon salon;
     private boolean isPresent;

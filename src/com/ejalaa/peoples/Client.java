@@ -86,7 +86,11 @@ public class Client extends People {
     }
 
     public void setGettingHairdress() {
-        waitingTime = Duration.between(arrivedTime, simEngine.getCurrentSimTime());
+        if (state == State.Waiting) {
+            waitingTime = Duration.between(arrivedTime, simEngine.getCurrentSimTime());
+        } else {
+            waitingTime = Duration.ZERO;
+        }
         state = State.GettingHairdress;
     }
 
