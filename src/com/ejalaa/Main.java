@@ -3,7 +3,6 @@ package com.ejalaa;
 import com.ejalaa.environment.ClientGenerator;
 import com.ejalaa.environment.Salon;
 import com.ejalaa.logging.Logger;
-import com.ejalaa.peoples.Client;
 import com.ejalaa.peoples.Hairdresser;
 import com.ejalaa.simulation.SimEngine;
 
@@ -32,7 +31,7 @@ public class Main {
         * ********************************************************************
         */
         LocalDateTime simStart = LocalDateTime.of(2016, 11, 10, 8, 45);
-        LocalDateTime simulationEndTime = LocalDateTime.of(2017, 11, 14, 21, 45);
+        LocalDateTime simulationEndTime = LocalDateTime.of(2017, 12, 10, 21, 45);
         /*
         * ********************************************************************
         * Simulator Engine
@@ -47,22 +46,22 @@ public class Main {
         // Salon -------------------------------------------------------------
         Salon salon = new Salon(simEngine);
         // Client ------------------------------------------------------------
-        Client bob = new Client(simEngine, "Bob", salon);
-        bob.setArrivedTime(LocalDateTime.of(2016, 11, 18, 10, 45));
-        bob.start();
+//        Client bob = new Client(simEngine, "Bob", salon);
+//        bob.setArrivedTime(LocalDateTime.of(2016, 11, 18, 10, 45));
+//        bob.start();
         // Hairdressers ------------------------------------------------------
         Hairdresser sandou = new Hairdresser(simEngine, "Sandou", salon);
-        sandou.setLaziness(0.1);
+        sandou.setLaziness(0.05);
         salon.addHairdresser(sandou);
         Hairdresser Pushmina = new Hairdresser(simEngine, "Pushmina", salon);
-        Pushmina.setLaziness(0.1);
+        Pushmina.setLaziness(0.05);
         salon.addHairdresser(Pushmina);
         Hairdresser Traore = new Hairdresser(simEngine, "Traore", salon);
-        Traore.setLaziness(0.1);
+        Traore.setLaziness(0.05);
         salon.addHairdresser(Traore);
-        Hairdresser Ali = new Hairdresser(simEngine, "Ali", salon);
-        Ali.setLaziness(0.1);
-        salon.addHairdresser(Ali);
+//        Hairdresser Fatou = new Hairdresser(simEngine, "Fatou", salon);
+//        Fatou.setLaziness(0.05);
+//        salon.addHairdresser(Fatou);
         ClientGenerator clientGenerator = new ClientGenerator(simEngine, salon);
         clientGenerator.setFrequency(12);
         salon.start();
@@ -74,7 +73,7 @@ public class Main {
         * ****************************************************************************************************************
         */
 
-        Logger.getInstance().turnOff();
+        Logger.getInstance().turnOn();
         Logger.getInstance().turnCsvOn();
 
         /*
@@ -96,6 +95,12 @@ public class Main {
         salon.printStats();
         printSep(40, "-");
         clientGenerator.printStats();
+        printSep(40, "-");
+        sandou.printStats();
+        printSep(40, "-");
+        Pushmina.printStats();
+        printSep(40, "-");
+//        Traore.printStats();
         printSep(60, "=");
 
         try {

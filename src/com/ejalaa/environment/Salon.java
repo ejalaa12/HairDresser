@@ -93,7 +93,7 @@ public class Salon extends Entity {
             nextOpeningTime = simEngine.getCurrentSimTime().plusWeeks(1).with(DayOfWeek.TUESDAY);
 
         }
-        this.nextOpeningTime = this.nextOpeningTime.withHour(9).withMinute(0).withSecond(0);
+        this.nextOpeningTime = this.nextOpeningTime.withHour(10).withMinute(0).withSecond(0);
         // Let's add some randomness with an offset
         int offset = rand.nextInt(30) - 30 / 2;
         this.nextOpeningTime = this.nextOpeningTime.plusMinutes(offset);
@@ -102,7 +102,7 @@ public class Salon extends Entity {
     public void updateNextClosingTime() {
         // next event is closing the same day at 21:00
         this.nextClosingTime = simEngine.getCurrentSimTime();
-        this.nextClosingTime = this.nextClosingTime.withHour(21);
+        this.nextClosingTime = this.nextClosingTime.withHour(20);
         this.nextClosingTime = this.nextClosingTime.withMinute(0);
         this.nextClosingTime = this.nextClosingTime.withSecond(0);
         // Let's add some randomness with an offset
@@ -178,6 +178,7 @@ public class Salon extends Entity {
             String str = "Sorry no hairdressers today...";
             Logger.getInstance().log(name, client.getArrivedTime(), str);
             client.leaveBecauseNoHairdressers();
+            acceptClients = false;
         }
     }
 
@@ -323,7 +324,7 @@ public class Salon extends Entity {
 
     private int calculateBenefit() {
         int expensePerOpeningDay = 100;
-        int incomePerClientHandled = 23;
+        int incomePerClientHandled = 12;
         int dailySalary = 100;
         int totalIncome = clientHandled * incomePerClientHandled;
         int totalWorkedDays = 0;
@@ -339,6 +340,9 @@ public class Salon extends Entity {
     public void stopAcceptingClients() {
         acceptClients = false;
         salonState = SalonState.Closing;
+        if (!anyHairDresserIsPresent()) {
+            close();
+        }
     }
 
     // State
